@@ -1,4 +1,5 @@
 import pickle
+import sqlite3
 import ssqlite.config
 
 from pathlib import Path
@@ -32,7 +33,7 @@ class SSqliteQueryGraph(object):
             pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
 
 
-def build_sqg_from_sql(sql_filename: str) -> None:
+def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
     """ Builds .sqg(ssqlite query graph) file from .sql file"""
     sqg = SSqliteQueryGraph()
 
@@ -41,21 +42,28 @@ def build_sqg_from_sql(sql_filename: str) -> None:
         queries = f.readlines()
     
     for idx, query in enumerate(queries):
+        cursor.execute(query)
+        primary_key = cursor.lastrowid
+
         try:
-            inst = parse_inst_from_query_string(query)
+            parsed_query = parse_inst_from_query_string(query)
+            inst = parsed_query["inst"]
+            table_name = parsed_query["table_name"]
+            column_name = parsed_query["column_name"]
+
         except InvalidInstructionError:
             continue
         
         if inst == NodeType.CREATE.name:
-            node = CreateNode(query_order=idx + 1)
+            node = CreateNode(query_order=idx + 1, target_table=table_name)
         elif inst == NodeType.INSERT.name:
-            node = InsertNode(query_order=idx + 1)
+            node = InsertNode(query_order=idx + 1, primary_key=primary_key, target_table=table_name)
         elif inst == NodeType.UPDATE.name:
-            node = UpdateNode(query_order=idx + 1)
+            node = UpdateNode(query_order=idx + 1, target_table=table_name, target_column=column_name)
         elif inst == NodeType.DROP.name:
-            node = DropNode(query_order=idx + 1)
+            node = DropNode(query_order=idx + 1, target_table=table_name)
         elif inst == NodeType.DELETE.name:
-            node = DeleteNode(query_order=idx + 1)
+            node = DeleteNode(query_order=idx + 1, target_table=table_name)
 
         try:
             sqg.add_node(node)

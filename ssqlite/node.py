@@ -16,7 +16,7 @@ class SSqliteNode(metaclass=ABCMeta):
 
     node_id: int = 0
 
-    def __init__(self, query_order: int): 
+    def __init__(self, query_order: int, primary_key: str="", target_table: str="", target_column: str=""):
         self.node_id = str(SSqliteNode.node_id).rjust(5, "0")
         SSqliteNode.node_id += 1
 
@@ -25,9 +25,9 @@ class SSqliteNode(metaclass=ABCMeta):
         self.parent: SSqliteNode = None
         self.children: list[SSqliteNode] = []
 
-        self.primary_key: str = ""
-        self.target_table: str = ""
-        self.target_column: str = ""
+        self.primary_key: str = primary_key
+        self.target_table: str = target_table
+        self.target_column: str = target_column
 
         self.flag_delete: bool = False
         self.flag_drop: bool = False
