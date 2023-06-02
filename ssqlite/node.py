@@ -1,14 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from enum import Enum
 
-
-class NodeType(Enum):
-
-    CREATE = 1
-    INSERT = 2
-    UPDATE = 3
-    DROP = 4
-    DELETE = 5
+from ssqlite.utils import NodeType
 
 
 class OrphanError(Exception):

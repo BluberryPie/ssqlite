@@ -1,3 +1,4 @@
+import pickle
 import ssqlite.config
 
 from pathlib import Path
@@ -15,8 +16,20 @@ class SSqliteQueryGraph(object):
     def add_node(self, node: SSqliteNode):
         pass
 
-    def save_to_file(self, sqg_filename: str="ssqlite.sqg"):
-        pass
+    @classmethod
+    def load_from_file(sqg_filename: str="ssqlite.sqg"):
+        """Load SQG from pickled file"""
+        sqg_filepath = Path(ssqlite.config.BASE_DIR) / sqg_filename
+        with open(sqg_filepath, "rb") as f:
+            graph = pickle.load(f)
+        return graph
+
+    @classmethod
+    def save_to_file(graph, sqg_filename: str="ssqlite.sqg") -> None:
+        """Save SQG object using pickle"""
+        sqg_filepath = Path(ssqlite.config.BASE_DIR) / sqg_filename
+        with open(sqg_filepath, "wb") as f:
+            pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
 
 
 def build_sqg_from_sql(sql_filename: str) -> None:
@@ -49,4 +62,4 @@ def build_sqg_from_sql(sql_filename: str) -> None:
         except Exception as e:
             pass
 
-    sqg.save_to_file()
+    SSqliteQueryGraph.save_to_file(sqg)
