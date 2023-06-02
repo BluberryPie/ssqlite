@@ -43,7 +43,7 @@ class SSqliteNode(metaclass=ABCMeta):
     def __repr__(self):
         return f"SSqliteNode(node_id={self.node_id}, query_order={self.query_order})"
 
-    def getParent(self):
+    def get_parent(self):
         """Get parent node"""
         parent_node = self.parent
         if parent_node is None:
@@ -51,17 +51,17 @@ class SSqliteNode(metaclass=ABCMeta):
         return parent_node
     
     @abstractmethod
-    def getChild(self, node_type: NodeType):
+    def get_child(self, node_type: NodeType):
         """Get specific child"""
         pass
 
     @abstractmethod
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
     @abstractmethod
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
 
@@ -72,15 +72,15 @@ class CreateNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
-    def getChild(self, node_type):
+    def get_child(self, node_type):
         """Get specific child"""
         pass
 
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
 
@@ -91,15 +91,15 @@ class InsertNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
-    def getChild(self, node_type):
+    def get_child(self, node_type):
         """Get specific child"""
         pass
 
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
 
@@ -110,11 +110,11 @@ class UpdateNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
 
@@ -125,11 +125,11 @@ class DropNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
 
@@ -140,10 +140,10 @@ class DeleteNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
-    def setParent(self):
+    def set_parent(self):
         """Set parent node"""
         pass
 
-    def addChild(self):
+    def add_child(self):
         """Add child node"""
         pass
