@@ -1,6 +1,7 @@
 CREATE TABLE X (id INTEGER PRIMARY KEY, name VARCHAR(255));
 INSERT INTO X(id, name) VALUES(1, 'Alice');
 INSERT INTO X(id, name) VALUES(2, 'Bob');
+UPDATE X SET name='April' WHERE id=1;
 UPDATE X SET name='Aaron' WHERE id=1;
 DELETE FROM X WHERE name='Aaron'; -- target
 INSERT INTO X(id, name) VALUES(3, 'Charles');
