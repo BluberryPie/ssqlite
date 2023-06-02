@@ -21,6 +21,24 @@ class InvalidOperation(Exception):
         return self.msg
 
 
+class InvalidParent(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
+    
+    def __str__(self):
+        return self.msg
+
+
+class InvalidChild(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
+    
+    def __str__(self):
+        return self.msg
+
+
 class SSqliteNode(metaclass=ABCMeta):
 
     node_id: int = 0
@@ -37,9 +55,6 @@ class SSqliteNode(metaclass=ABCMeta):
         self.primary_key: str = primary_key
         self.target_table: str = target_table
         self.target_column: str = target_column
-
-        self.flag_delete: bool = False
-        self.flag_drop: bool = False
     
     def __repr__(self):
         return f"SSqliteNode(node_id={self.node_id}, query_order={self.query_order})"
@@ -71,7 +86,7 @@ class CreateNode(SSqliteNode):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        pass
+        self.flag_drop: bool = False
 
     def __repr__(self):
         return f"CreateNode(node_id={self.node_id}, query_order={self.query_order})"
@@ -84,16 +99,23 @@ class CreateNode(SSqliteNode):
         """Set parent node"""
         raise InvalidOperation("CreateNode cannot have a parent node")
 
-    def add_child(self):
+    def add_child(self, node: SSqliteNode):
         """Add child node"""
-        pass
+        if isinstance(node, InsertNode) or isinstance(node, DropNode):
+            self.children.append(node)
+        else:
+            raise InvalidChild(f"[{type(node)}] cannot be a child of CreateNode")
+    
+    def set_drop_flag(self):
+        """Set flag_drop to True"""
+        self.flag_drop = True
 
 
 class InsertNode(SSqliteNode):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        pass
+        self.flag_delete: bool = False
 
     def __repr__(self):
         return f"InsertNode(node_id={self.node_id}, query_order={self.query_order})"
@@ -102,13 +124,20 @@ class InsertNode(SSqliteNode):
         """Get specific child"""
         pass
 
-    def set_parent(self):
+    def set_parent(self, node: CreateNode):
         """Set parent node"""
-        pass
+        if not isinstance(node, CreateNode):
+            raise InvalidParent(f"[{type(node)}] cannot be a parent of InsertNode")
+        else:
+            self.parent = node
 
     def add_child(self):
         """Add child node"""
         pass
+
+    def set_delete_flag(self):
+        """Set flag_delete to True"""
+        self.flag_delete=True
 
 
 class UpdateNode(SSqliteNode):

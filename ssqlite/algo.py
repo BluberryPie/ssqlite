@@ -4,6 +4,7 @@ import ssqlite.config
 
 from pathlib import Path
 
+from ssqlite.index import Index
 from ssqlite.utils import NodeType, InvalidInstructionError
 from ssqlite.utils import parse_query_string
 from ssqlite.node import SSqliteNode, CreateNode, InsertNode, UpdateNode, DropNode, DeleteNode
@@ -12,19 +13,46 @@ from ssqlite.node import SSqliteNode, CreateNode, InsertNode, UpdateNode, DropNo
 class SSqliteQueryGraph(object):
     
     def __init__(self):
-        self.data: list[SSqliteNode] = []
+        self.index: Index = Index()
 
     def add_node(self, node: SSqliteNode):
         print(f"Adding {node}")
         if isinstance(node, CreateNode):
-            self.data.append(node)
+            # Add create node to index
+            self.index.add(node)
         elif isinstance(node, InsertNode):
-            pass
+            # 1. Add insert node to index
+            self.index.add(node)
+            # 2. Find its corresponding CreateNode from the index(using table name)
+            parent_create_node = self.index.find(_from="create", _key=node.target_table)
+            # 3. Set the CreateNode as its parent
+            node.set_parent(parent_create_node)
+            # 4. Add child to CreateNode
+            parent_create_node.add_child(node)
         elif isinstance(node, UpdateNode):
+            # 1. Add update node to index
+            # 2. Find its corresponding InsertNode or UpdateNode from the index
+            # 3. Set the InsertNode or UpdateNode as its parent
+            # 4. Add child to InsertNode or UpdateNode
             pass
         elif isinstance(node, DropNode):
-            pass
+            # 1. Add drop node to index
+            self.index.add(node)
+            # 2. Find its corresponding CreateNode from the index(using table name)
+            parent_create_node = self.index.find(_from="create", _key=node.target_table)
+            # 3. Set the CreateNode as its parent
+            node.set_parent(parent_create_node)
+            # 4. Set flag_drop=True in parent CreateNode
+            parent_create_node.set_drop_flag()
+            # 5. Add child to CreateNode
+            parent_create_node.add_child(node)
         elif isinstance(node, DeleteNode):
+            # 1. Add delete node to index
+            self.index.add(node)
+            # 2. Find it corresponding InsertNode from the index(using table name and primary key)
+            # 3. Set the InsertNode as its parent
+            # 4. Set flag_delete=True in parent InsertNode
+            # 5. Add child to InsertNode
             pass
 
     @classmethod
