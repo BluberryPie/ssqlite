@@ -54,31 +54,31 @@ def parse_query_string(query_string: str) -> dict:
     if inst == NodeType.CREATE.name:
         table_name = parse_table_name(
             pattern=r"TABLE(\s+)(?P<table_name>[a-zA-Z0-9_]+)(\s+)",
-            string=query_string
+            query_string=query_string
         )
     elif inst == NodeType.INSERT.name:
         table_name = parse_table_name(
             pattern=r"INSERT(\s+)INTO(\s+)(?P<table_name>[a-zA-Z0-9_]+)",
-            string=query_string
+            query_string=query_string
         )
     elif inst == NodeType.UPDATE.name:
         table_name = parse_table_name(
             pattern=r"UPDATE(\s+)(?P<table_name>[a-zA-Z0-9_]+)(\s+)SET",
-            string=query_string
+            query_string=query_string
         )
         column_name = parse_column_name(
             pattern=r"SET(\s+)(?P<column_name>[a-zA-Z0-9_]+)(\s*)=",
-            string=query_string
+            query_string=query_string
         )
     elif inst == NodeType.DROP.name:
         table_name = parse_table_name(
             pattern=r"DROP(\s+)TABLE(\s+)(?P<table_name>[a-zA-Z0-9_]+)",
-            string=query_string
+            query_string=query_string
         )
     elif inst == NodeType.DELETE.name:
         table_name = parse_table_name(
             pattern=r"DELETE(\s+)FROM(\s+)(?P<table_name>[a-zA-Z0-9_]+)(\s+)",
-            string=query_string
+            query_string=query_string
         )
 
     result = {"inst": inst, "table_name": table_name, "column_name": column_name}

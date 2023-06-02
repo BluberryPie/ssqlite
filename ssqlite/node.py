@@ -12,6 +12,15 @@ class OrphanError(Exception):
         return self.msg
 
 
+class InvalidOperation(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
+    
+    def __str__(self):
+        return self.msg
+
+
 class SSqliteNode(metaclass=ABCMeta):
 
     node_id: int = 0
@@ -64,13 +73,16 @@ class CreateNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
+    def __repr__(self):
+        return f"CreateNode(node_id={self.node_id}, query_order={self.query_order})"
+
     def get_child(self, node_type):
         """Get specific child"""
         pass
 
     def set_parent(self):
         """Set parent node"""
-        pass
+        raise InvalidOperation("CreateNode cannot have a parent node")
 
     def add_child(self):
         """Add child node"""
@@ -82,6 +94,9 @@ class InsertNode(SSqliteNode):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         pass
+
+    def __repr__(self):
+        return f"InsertNode(node_id={self.node_id}, query_order={self.query_order})"
 
     def get_child(self, node_type):
         """Get specific child"""
@@ -102,6 +117,13 @@ class UpdateNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
+    def __repr__(self):
+        return f"UpdateNode(node_id={self.node_id}, query_order={self.query_order})"
+
+    def get_child(self, node_type: NodeType):
+        """Get specific child"""
+        pass
+
     def set_parent(self):
         """Set parent node"""
         pass
@@ -117,6 +139,13 @@ class DropNode(SSqliteNode):
         super().__init__(**kwargs)
         pass
 
+    def __repr__(self):
+        return f"DropNode(node_id={self.node_id}, query_order={self.query_order})"
+
+    def get_child(self, node_type: NodeType):
+        """Get specific child"""
+        pass
+
     def set_parent(self):
         """Set parent node"""
         pass
@@ -130,6 +159,13 @@ class DeleteNode(SSqliteNode):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        pass
+
+    def __repr__(self):
+        return f"DeleteNode(node_id={self.node_id}, query_order={self.query_order})"
+
+    def get_child(self, node_type: NodeType):
+        """Get specific child"""
         pass
 
     def set_parent(self):

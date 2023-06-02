@@ -1,6 +1,6 @@
 import sqlite3
 
-from algo import build_sqg_from_sql
+from ssqlite.algo import build_sqg_from_sql
 
 
 def executescript(db_name: str, sql_filename: str):
