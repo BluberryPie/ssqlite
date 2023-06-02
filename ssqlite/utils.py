@@ -60,7 +60,9 @@ def parse_query_string(query_string: str) -> dict:
     if inst not in [nt.name for nt in NodeType]:
         raise InvalidInstructionError(inst)
 
-    table_name, column_name = None, None
+    table_name = None
+    column_name = None
+    condition = None
 
     if inst == NodeType.CREATE.name:
         table_name = parse_table_name(
@@ -82,7 +84,7 @@ def parse_query_string(query_string: str) -> dict:
             query_string=query_string
         )
         condition = parse_condition(
-            pattern=r"(?P<condition>WHERE(\s+)([a-zA-Z0-9_]*)(\s*)=(\s*)([a-zA-Z0-9_]))",
+            pattern=r"(?P<condition>WHERE(\s+)([a-zA-Z0-9_]*)(\s*)=(\s*)(\'?)(\"?)([a-zA-Z0-9_]+)(\'?)(\"?))",
             query_string=query_string
         )
     elif inst == NodeType.DROP.name:
@@ -96,7 +98,7 @@ def parse_query_string(query_string: str) -> dict:
             query_string=query_string
         )
         condition = parse_condition(
-            pattern=r"(?P<condition>WHERE(\s+)([a-zA-Z0-9_]*)(\s*)=(\s*)([a-zA-Z0-9_]))",
+            pattern=r"(?P<condition>WHERE(\s+)([a-zA-Z0-9_]*)(\s*)=(\s*)(\'?)(\"?)([a-zA-Z0-9_]+)(\'?)(\"?))",
             query_string=query_string
         )
 

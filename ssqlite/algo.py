@@ -31,9 +31,15 @@ class SSqliteQueryGraph(object):
             parent_create_node.add_child(node)
         elif isinstance(node, UpdateNode):
             # 1. Add update node to index
+            self.index.add(node)
             # 2. Find its corresponding InsertNode or UpdateNode from the index
+            corr_insert_node = self.index.find(_from="insert", _key=f"{node.target_table}-{node.primary_key}")
+            last_update_node = corr_insert_node.find_last_update(column=node.target_column)
+            parent_node = corr_insert_node if last_update_node is None else last_update_node
             # 3. Set the InsertNode or UpdateNode as its parent
+            node.set_parent(parent_node)
             # 4. Add child to InsertNode or UpdateNode
+            parent_node.add_child(node)
             pass
         elif isinstance(node, DropNode):
             # 1. Add drop node to index
@@ -50,10 +56,13 @@ class SSqliteQueryGraph(object):
             # 1. Add delete node to index
             self.index.add(node)
             # 2. Find it corresponding InsertNode from the index(using table name and primary key)
+            parent_insert_node = self.index.find(_from="insert", _key=f"{node.target_table}-{node.primary_key}")
             # 3. Set the InsertNode as its parent
+            node.set_parent(parent_insert_node)
             # 4. Set flag_delete=True in parent InsertNode
+            parent_insert_node.set_delete_flag()
             # 5. Add child to InsertNode
-            pass
+            parent_insert_node.add_child(node)
 
     @classmethod
     def load_from_file(self, sqg_filename: str="ssqlite.sqg"):
@@ -106,8 +115,8 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             )
         elif inst == NodeType.UPDATE.name:
             # Add preliminary query to get primary key
-            cursor.execute(f"SELECT FROM {table_name} {condition}")
-            update_pk = cursor.lastrowid
+            cursor.execute(f"SELECT rowid FROM {table_name} {condition}")
+            update_pk = cursor.fetchone()[0]
             # Execute actual query
             cursor.execute(query)
             node = UpdateNode(
@@ -123,8 +132,8 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             )
         elif inst == NodeType.DELETE.name:
             # Add preliminary query to get primary key
-            cursor.execute(f"SELECT FROM {table_name} {condition}")
-            delete_pk = cursor.lastrowid
+            cursor.execute(f"SELECT rowid FROM {table_name} {condition}")
+            delete_pk = cursor.fetchone()[0]
             # Execute actual query
             cursor.execute(query)
             node = DeleteNode(

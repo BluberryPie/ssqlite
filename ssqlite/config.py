@@ -1,1 +1,1 @@
-BASE_DIR = "/Users/c0ld574rf15h/workspace/ssqlite"
+BASE_DIR = "/Users/blueberry/workspace/ssqlite"
