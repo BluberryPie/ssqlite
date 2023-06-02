@@ -65,9 +65,9 @@ class SSqliteQueryGraph(object):
             parent_insert_node.add_child(node)
 
     @classmethod
-    def load_from_file(self, sqg_filename: str="ssqlite.sqg"):
+    def load_from_file(self):
         """Load SQG from pickled file"""
-        sqg_filepath = Path(ssqlite.config.BASE_DIR) / sqg_filename
+        sqg_filepath = Path(ssqlite.config.BASE_DIR) / ssqlite.config.SQG_FILENAME
         with open(sqg_filepath, "rb") as f:
             graph = pickle.load(f)
         return graph
