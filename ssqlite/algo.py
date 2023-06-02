@@ -81,31 +81,57 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
     
     for idx, query in enumerate(queries):
         try:
-            cursor.execute(query)
-        except sqlite3.OperationalError as e:
-            print(f"Something wrong with the query...\n{e}")
-        else:
-            primary_key = cursor.lastrowid
-
-        try:
             parsed_query = parse_query_string(query)
+            # Explode
             inst = parsed_query["inst"]
             table_name = parsed_query["table_name"]
             column_name = parsed_query["column_name"]
-
+            condition = parsed_query["condition"]
         except InvalidInstructionError:
             continue
         
         if inst == NodeType.CREATE.name:
-            node = CreateNode(query_order=idx + 1, target_table=table_name)
+            cursor.execute(query)
+            node = CreateNode(
+                query_order=idx + 1,
+                target_table=table_name
+            )
         elif inst == NodeType.INSERT.name:
-            node = InsertNode(query_order=idx + 1, primary_key=primary_key, target_table=table_name)
+            cursor.execute(query)
+            insert_pk = cursor.lastrowid
+            node = InsertNode(
+                query_order=idx + 1,
+                primary_key=insert_pk,
+                target_table=table_name
+            )
         elif inst == NodeType.UPDATE.name:
-            node = UpdateNode(query_order=idx + 1, target_table=table_name, target_column=column_name)
+            # Add preliminary query to get primary key
+            cursor.execute(f"SELECT FROM {table_name} {condition}")
+            update_pk = cursor.lastrowid
+            # Execute actual query
+            cursor.execute(query)
+            node = UpdateNode(
+                query_order=idx + 1,
+                primary_key=update_pk,
+                target_table=table_name,
+                target_column=column_name
+            )
         elif inst == NodeType.DROP.name:
-            node = DropNode(query_order=idx + 1, target_table=table_name)
+            node = DropNode(
+                query_order=idx + 1,
+                target_table=table_name
+            )
         elif inst == NodeType.DELETE.name:
-            node = DeleteNode(query_order=idx + 1, target_table=table_name)
+            # Add preliminary query to get primary key
+            cursor.execute(f"SELECT FROM {table_name} {condition}")
+            delete_pk = cursor.lastrowid
+            # Execute actual query
+            cursor.execute(query)
+            node = DeleteNode(
+                query_order=idx + 1,
+                primary_key=delete_pk,
+                target_table=table_name
+            )
 
         try:
             sqg.add_node(node)
