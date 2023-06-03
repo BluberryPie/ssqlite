@@ -2,16 +2,23 @@ from ssqlite.algo import SSqliteQueryGraph as SQG
 from ssqlite.node import *
 
 
-def generate_undo_query_create(graph: SQG, node: CreateNode):
-    pass
+def generate_undo_query_create(node: CreateNode):
+    # 1. Check if flag_drop is on
+    if node.flag_drop:
+        return []
+    # 2. Otherwise, generate corresponding DROP query
+    drop_query = f"DROP TABLE {node.target_table};"
+    undo_query_set = [drop_query]
+
+    return undo_query_set
 
 
-def generate_undo_query_insert(graph: SQG, node: InsertNode):
+def generate_undo_query_insert(node: InsertNode):
     # 1. Check if flag_delete is on
     if node.flag_delete:
         return []
     # 2. Otherwise, generate corresponding DELETE query
-    delete_query = f"DELETE FROM {node.target_table} WHERE rowid={node.primary_key}"
+    delete_query = f"DELETE FROM {node.target_table} WHERE rowid={node.primary_key};"
     undo_query_set = [delete_query]
     return undo_query_set
 
@@ -48,9 +55,9 @@ def generate_undo_query(graph: SQG, query_order: int) -> list[str]:
     target_node = graph.index.find_by_order(query_order=query_order)
     
     if isinstance(target_node, CreateNode):
-        undo_query_set = generate_undo_query_create(graph, target_node)
+        undo_query_set = generate_undo_query_create(target_node)
     elif isinstance(target_node, InsertNode):
-        undo_query_set = generate_undo_query_insert(graph, target_node)
+        undo_query_set = generate_undo_query_insert(target_node)
     elif isinstance(target_node, UpdateNode):
         undo_query_set = generate_undo_query_update(graph, target_node)
     elif isinstance(target_node, DropNode):
