@@ -89,7 +89,7 @@ Upon running the test code, if the result is returned as `OK`, it indicates that
 
 Additional properties have been incorporated into the conventional tree node structures to facilitate the functioning of the revert mechanism. An example of such a property is `query_order`, which plays a vital role in the recovery algorithm by allowing efficient retrieval of the target node with a time complexity of $O(1)$. This property serves as a key within a hash map data structure referred to as the **Index**. Furthermore, properties like `primary_key` and `target_table` are utilized in the formulation of the undo query set through specifically designed algorithms.
 
-In our implementation, we have organized the node structure based on the type of query statements. This division is necessary because the process of reverting each query statement differs. As a result, we have introduced additional node classes, namely CreateNode, InsertNode, UpdateNode, DropNode, and DeleteNode, which inherit from the SSqliteNode class. These specialized node classes possess their own specific data properties and functionalities.
+In our implementation, we have organized the node structure based on the type of query statements. This division is necessary because the process of reverting each query statement differs. As a result, we have introduced additional node classes, namely `CreateNode`, `InsertNode`, `UpdateNode`, `DropNode`, and `DeleteNode`, which inherit from the SSqliteNode class. These specialized node classes possess their own specific data properties and functionalities.
 
 Furthermore, we have implemented certain restrictions that each node must adhere to. These restrictions are crucial for efficient traversal of the tree structure. One of the most significant restrictions pertains to the types of parent and children nodes that a node can have.
 
@@ -112,6 +112,142 @@ The combined functionality of the Index and the tree structure can be illustrate
 ---
 
 ## Algorithm
+
+This is the magic part of the **`SSQLite`** module, which generates suitable undo query sets for any specified query. The reversion algorithm operates within the *Query Reverter* component, as depicted in the overview diagram and implemented in the `ssqlite/recovery.py` file. The following pseudocode illustrates the process of generating reverse queries for each node type. Of course the full implementation is also available in the `ssqlite/recovery.py` file.
+
+> 💡 Please note that our current version of the algorithms does not account for complex scenarios such as relationships, cascading effects, and uncommon corner cases that may arise.
+
+### 1. Reverting `CREATE`
+
+* Time complexity: $O(1)$
+
+```
+# Apparently one of the easiest case
+------------------------------
+- Input: CreateNode<SSqliteNode>
+- Output: QuerySet<List>
+
+[Algorithm]
+
+IF CreateNode.is_dropped
+    return []
+ELSE
+    table = CreateNode.target_table
+    return "DROP TABLE {table}"
+ENDIF
+```
+
+### 2. Reverting `INSERT`
+
+* Time complexity: $O(1)$
+
+```
+# Apparently one of the easiest case
+------------------------------
+- Input: InsertNode<SSqliteNode>
+- Output: QuerySet<List>
+
+[Algorithm]
+
+IF InsertNode.is_deleted
+    return []
+ELSE
+    table = InsertNode.target_table
+    pk = InsertNode.primary_key
+    return "DELETE FROM {table} WHERE rowid={pk}"
+ENDIF
+```
+
+### 3. Reverting `UPDATE`
+
+* Time complexity: $O(N)$
+
+```
+- Input: UpdateNode<SSqliteNode>
+- Output: QuerySet<List>
+
+[Algorithm]
+
+InsertNode = UpdateNode.find_corresponding_InsertNode()
+IF InsertNode.is_deleted
+    return []
+ENDIF
+
+ParentNode = UpdateNode.get_parent_node()
+IF ParentNode is UpdateNode
+    return [ParentNode.query_string]
+ELSE IF ParentNode is InsertNode
+    table = UpdateNode.target_table
+    pk = UpdateNode.primary_key
+    delete_query = "DELETE FROM {table} WHERE rowid={pk}"
+    insert_query = InsertNode.query_string
+    return [delete_query, insert_query]
+ELSE
+    Raise Exception
+ENDIF
+```
+
+### 4. Reverting `DROP`
+
+* Time complexity: $O(N^2)$
+
+```
+# The heaviest procedure
+------------------------------
+- Input: DropNode<SSqliteNode>
+- Output: QuerySet<List>
+
+[Algorithm]
+
+CreateNode = DropNode.get_parent_node()
+InsertNodes = []
+UpdateNodes = []
+
+FOR child IN CreateNode.children
+    IF child is InsertNode and child.is_not_deleted
+        InsertNodes.add(child)
+    ENDIF
+ENDFOR
+
+FOR InsertNode IN InsertNodes:
+    FOR column IN InsertNode.all_updated_columns
+        UpdateNode = GetLastUpdate(InsertNode.target_table, column)
+        IF UpdateNode.exists
+            UpdateNodes.add(UpdateNode)
+        ENDIF
+    ENDFOR
+ENDFOR
+
+undo_query  = [CreateNode.query_string]
+undo_query += [InsertNodes.query_string]
+undo_query += [UpdateNodes.query_string]
+
+return undo_query
+```
+
+### 5. Reverting `DELETE`
+
+* Time complexity: $O(N)$
+
+```
+- Input: DeleteNode<SSqliteNode>
+- Output: QuerySet<List>
+
+[Algorithm]
+
+InsertNode = DeleteNode.get_parent_node()
+UpdateNodes = []
+
+FOR column IN InsertNode.all_updated_columns
+    UpdateNode = GetLastUpdate(DeleteNode.target_table, column)
+    UpdateNodes.add(UpdateNode)
+ENDFOR
+
+undo_query  = [InsertNode.query_string]
+undo_query += [UpdateNodes.query_string]
+
+return undo_query
+```
 
 ---
 
