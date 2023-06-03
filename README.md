@@ -1,1 +1,3 @@
 # SSQLite(Secure SQLite)
+
+**SSQLite**, an abbreviation for Secure Sqlite, adds an additional layer to the `sqlite3` module by recording database modifications. This feature allows users to revert a specific query executed at any point in time. The logging mechanism is facilitated by a sophisticated data structure called **SSqliteQueryGraph** (SQG), which functions as a tree structure comprising nodes representing individual query statements. SQG not only tracks the queries that users intend to undo but also offers an efficient set of queries for data recovery. Consequently, users can now perform Point In Time Recovery (PITR) without executing irrelevant queries, resulting in significant savings in computing resources.
