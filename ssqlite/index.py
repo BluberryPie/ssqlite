@@ -15,6 +15,7 @@ class NodeNotFound(Exception):
 class Index(object):
     
     def __init__(self):
+        self.order_index = {}
         self.create_index = {}
         self.insert_index = {}
         self.update_index = defaultdict(list)
@@ -33,6 +34,8 @@ class Index(object):
             self.drop_index[node.target_table] = node
         elif isinstance(node, DeleteNode):
             self.delete_index[f"{node.target_table}-{node.primary_key}"] =  node
+        # Add another mapping for O(1) search at recovery
+        self.order_index[node.query_order] = node
 
     def find(self, _from: str, _key: str) -> SSqliteNode:
         """Find specific node from index"""
@@ -40,5 +43,11 @@ class Index(object):
             node = getattr(self, f"{_from.lower()}_index")[_key]
         except Exception:
             raise NodeNotFound(f"{_from.lower()} node with key: [{_key}] doesn't exist")
-
+        return node
+    
+    def find_by_order(self, query_order: int) -> SSqliteNode:
+        """Find specific node based on query order"""
+        node = self.order_index.get(query_order, None)
+        if node is None:
+            raise NodeNotFound(f"Node with query order [{query_order}] doesn't exist")
         return node
