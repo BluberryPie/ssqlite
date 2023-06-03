@@ -73,22 +73,22 @@ class SSqliteQueryGraph(object):
             self.index.add(node)
 
     @classmethod
-    def load_from_file(self):
+    def load_from_file(cls, sqg_filename: str="ssqlite.sqg"):
         """Load SQG from pickled file"""
-        sqg_filepath = Path(ssqlite.config.BASE_DIR) / ssqlite.config.SQG_FILENAME
+        sqg_filepath = Path(ssqlite.config.BASE_DIR) / sqg_filename
         with open(sqg_filepath, "rb") as f:
             graph = pickle.load(f)
         return graph
 
     @classmethod
-    def save_to_file(self, graph, sqg_filename: str="ssqlite.sqg") -> None:
+    def save_to_file(cls, graph, sqg_filename: str="ssqlite.sqg") -> None:
         """Save SQG object using pickle"""
         sqg_filepath = Path(ssqlite.config.BASE_DIR) / sqg_filename
         with open(sqg_filepath, "wb") as f:
             pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
 
 
-def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
+def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str, sqg_filename: str) -> None:
     """ Builds .sqg(ssqlite query graph) file from .sql file"""
     sqg = SSqliteQueryGraph()
 
@@ -160,4 +160,4 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
         except Exception as e:
             pass
 
-    SSqliteQueryGraph.save_to_file(sqg)
+    SSqliteQueryGraph.save_to_file(graph=sqg, sqg_filename=sqg_filename)
