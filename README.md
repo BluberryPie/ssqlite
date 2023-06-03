@@ -89,7 +89,21 @@ Upon running the test code, if the result is returned as `OK`, it indicates that
 
 Additional properties have been incorporated into the conventional tree node structures to facilitate the functioning of the revert mechanism. An example of such a property is `query_order`, which plays a vital role in the recovery algorithm by allowing efficient retrieval of the target node with a time complexity of $O(1)$. This property serves as a key within a hash map data structure referred to as the **Index**. Furthermore, properties like `primary_key` and `target_table` are utilized in the formulation of the undo query set through specifically designed algorithms.
 
-The `Index` is an integral part of the `SSqliteQueryGraph`, serving as a hash map data structure designed to efficiently locate specific nodes using their corresponding keys. The inclusion of this additional component is crucial for optimizing the recovery algorithm's efficiency, as searching the entire tree structure would be time-consuming. By utilizing the `Index`, it becomes feasible to retrieve specific nodes based on their query order, as previously mentioned. Furthermore, it enables the search for specific nodes based on significant information such as the `primary_key` or `target_column`.
+In our implementation, we have organized the node structure based on the type of query statements. This division is necessary because the process of reverting each query statement differs. As a result, we have introduced additional node classes, namely CreateNode, InsertNode, UpdateNode, DropNode, and DeleteNode, which inherit from the SSqliteNode class. These specialized node classes possess their own specific data properties and functionalities.
+
+Furthermore, we have implemented certain restrictions that each node must adhere to. These restrictions are crucial for efficient traversal of the tree structure. One of the most significant restrictions pertains to the types of parent and children nodes that a node can have.
+
+The organization of these components is as follows:
+
+|Node|Possible Parent Candidates|Possible Child Candidates|
+|---|---|---|
+|`CreateNode`|None|`InsertNode`, `DropNode`|
+|`InsertNode`|`CreateNode`|`UpdateNode`, `DeleteNode`|
+|`UpdateNode`|`InsertNode`, `UpdateNode`|`UpdateNode`|
+|`DropNode`|`CreateNode`|None|
+|`DeleteNode`|`InsertNode`|None|
+
+The `Index` is another integral part of the `SSqliteQueryGraph`, serving as a hash map data structure designed to efficiently locate specific nodes using their corresponding keys. The inclusion of this additional component is crucial for optimizing the recovery algorithm's efficiency, as searching the entire tree structure would be time-consuming. By utilizing the `Index`, it becomes feasible to retrieve specific nodes based on their query order, as previously mentioned. Furthermore, it enables the search for specific nodes based on significant information such as the `primary_key` or `target_column`.
 
 The combined functionality of the Index and the tree structure can be illustrated as follows:
 
