@@ -103,6 +103,7 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             cursor.execute(query)
             node = CreateNode(
                 query_order=idx + 1,
+                query_string=query,
                 target_table=table_name
             )
         elif inst == NodeType.INSERT.name:
@@ -110,6 +111,7 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             insert_pk = cursor.lastrowid
             node = InsertNode(
                 query_order=idx + 1,
+                query_string=query,
                 primary_key=insert_pk,
                 target_table=table_name
             )
@@ -121,6 +123,7 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             cursor.execute(query)
             node = UpdateNode(
                 query_order=idx + 1,
+                query_string=query,
                 primary_key=update_pk,
                 target_table=table_name,
                 target_column=column_name
@@ -128,6 +131,7 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
         elif inst == NodeType.DROP.name:
             node = DropNode(
                 query_order=idx + 1,
+                query_string=query,
                 target_table=table_name
             )
         elif inst == NodeType.DELETE.name:
@@ -138,6 +142,7 @@ def build_sqg_from_sql(cursor: sqlite3.Cursor, sql_filename: str) -> None:
             cursor.execute(query)
             node = DeleteNode(
                 query_order=idx + 1,
+                query_string=query,
                 primary_key=delete_pk,
                 target_table=table_name
             )

@@ -19,6 +19,8 @@ def generate_undo_query_drop(node: DropNode):
 
 
 def generate_undo_query_delete(node: DeleteNode):
+    # 1. Find corresponding InsertNode(=parent)
+    # 2. Find all following updates
     pass
 
 

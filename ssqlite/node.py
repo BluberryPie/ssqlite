@@ -43,11 +43,15 @@ class SSqliteNode(metaclass=ABCMeta):
 
     node_id: int = 0
 
-    def __init__(self, query_order: int, primary_key: str="", target_table: str="", target_column: str=""):
+    def __init__(
+            self, query_order: int, query_string: str,
+            primary_key: str="", target_table: str="", target_column: str=""
+        ):
         self.node_id = str(SSqliteNode.node_id).rjust(5, "0")
         SSqliteNode.node_id += 1
 
         self.query_order: int = query_order
+        self.query_string: str = query_string
 
         self.parent: SSqliteNode = None
         self.children: list[SSqliteNode] = []
@@ -208,10 +212,7 @@ class DropNode(SSqliteNode):
 
     def add_child(self, node: CreateNode):
         """Add child node"""
-        if isinstance(node, CreateNode):
-            self.children.append(node)
-        else:
-            raise InvalidChild(f"[{type(node)}] cannot be a child of DropNode")
+        raise InvalidOperation("DropNode cannot have a child node")
 
 
 class DeleteNode(SSqliteNode):
@@ -236,8 +237,4 @@ class DeleteNode(SSqliteNode):
 
     def add_child(self, node: InsertNode):
         """Add child node"""
-        if isinstance(node, InsertNode):
-            self.children.append(node)
-        else:
-            raise InvalidChild(f"[{type(node)}] cannot be a child of DeleteNode")
-
+        raise InvalidOperation("DeleteNode cannot have a child node")
