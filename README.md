@@ -19,7 +19,7 @@ Suppose a user wants to undo a `DELETE` statement from the recorded history (6th
 (...and a bunch of more queries)
 ```
 
-In previous approaches to performing Point In Time Recovery (PITR), it was necessary to either execute all queries preceding the target query or employ snapshot recovery methods. Subsequently, the user would need to execute all subsequent queries after the target query to maintain the most up-to-date state.'
+In previous approaches to performing Point In Time Recovery (PITR), it was necessary to either execute all queries preceding the target query or employ snapshot recovery methods. Subsequently, the user would need to execute all subsequent queries after the target query to maintain the most up-to-date state.
 
 However, a more efficient approach would involve extracting only the relevant queries associated with the targeted query and generating a set of queries capable of reverting this subset of actions. In the example mentioned above, the relevant queries pertaining to the `DELETE` statement are as follows:
 
@@ -41,3 +41,41 @@ Unfortunately, the current version of **`SSQLite`** does not possess the ability
 INSERT INTO X(id, name) VALUES(1, 'Alice');
 UPDATE X SET name='Aaron' WHERE id=1;
 ```
+
+---
+
+## Run
+
+A sample of running queries from a .sql file is as follows:
+
+``` python
+import ssqlite
+
+ssqlite.executescript(
+    db_name="test.db",
+    sql_filename="test.sql",
+    sqg_filename="test.sqg"
+)
+```
+
+At present, the **`SSQLite`** implementation solely supports the executescript function, which serves as a wrapper. This function is responsible for executing all queries specified in a single text file. Additionally, it generates an accompanying `.sqg` file with the designated name, alongside the existing `.db` file.
+
+Moreover, to verify the expected functionality of the recovery function for predefined test cases, simply execute the test.py file.
+
+``` bash
+$ python3 test.py
+```
+
+Upon running the test code, if the result is returned as `OK`, it indicates that the generation of the undo query set has been successful as anticipated. Additionally, you can examine each test case along with its corresponding expected results directly within the `test.py` file.
+
+---
+
+## Data Structure(SQG)
+
+---
+
+## Algorithm
+
+---
+
+## Statistics

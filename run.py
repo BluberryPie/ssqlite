@@ -1,10 +1,8 @@
 import ssqlite
 
-from ssqlite.algo import SSqliteQueryGraph as SQG
-from ssqlite.recovery import generate_undo_query
-
 
 def main():
+    # Example code
     ssqlite.executescript(
         db_name="test.db",
         sql_filename="test.sql",
