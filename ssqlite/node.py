@@ -1,7 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-from ssqlite.utils import NodeType
-
 
 class OrphanError(Exception):
 
@@ -155,21 +153,6 @@ class InsertNode(SSqliteNode):
                 updated_columns.add(child.target_column)
         
         return updated_columns
-    
-    # def find_last_update(self, column: str):
-    #     """Return the last update node that deals with the column `column`
-    #     Return None if there isn't one
-    #     """
-    #     max_query_order = 0
-    #     last_update_node = None
-
-    #     for child in self.children:
-    #         if isinstance(child, UpdateNode) and child.target_column == column:
-    #             if child.query_order > max_query_order:
-    #                 max_query_order = child.query_order
-    #                 last_update_node = child
-        
-    #     return last_update_node
 
 
 class UpdateNode(SSqliteNode):
@@ -200,15 +183,6 @@ class UpdateNode(SSqliteNode):
             self.children.append(node)
         else:
             raise InvalidChild(f"[{type(node)}] cannot be a child of UpdateNode")
-
-    # def get_last_update(self, node):
-    #     """Return the last update node"""
-    #     last_update_node = node
-
-    #     while last_update_node.children:
-    #         last_update_node = last_update_node.children[0]
-        
-    #     return last_update_node
 
 
 class DropNode(SSqliteNode):

@@ -29,7 +29,7 @@ class Index(object):
         elif isinstance(node, InsertNode):
             self.insert_index[f"{node.target_table}-{node.primary_key}"] = node
         elif isinstance(node, UpdateNode):
-            self.update_index[f"{node.target_table}-{node.target_column}"].append(node)
+            self.update_index[f"{node.target_table}-{node.primary_key}-{node.target_column}"].append(node)
         elif isinstance(node, DropNode):
             self.drop_index[node.target_table] = node
         elif isinstance(node, DeleteNode):
@@ -51,3 +51,11 @@ class Index(object):
         if node is None:
             raise NodeNotFound(f"Node with query order [{query_order}] doesn't exist")
         return node
+    
+    def find_last_update(self, table_name: str, primary_key: str, column_name: str) -> UpdateNode:
+        """Find last update node based on given _key"""
+        try:
+            last_update_node = self.update_index[f"{table_name}-{primary_key}-{column_name}"][-1]
+        except Exception:
+            return None
+        return last_update_node

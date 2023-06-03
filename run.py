@@ -8,8 +8,11 @@ def main():
     ssqlite.executescript(db_name="test.db", sql_filename="test_delete.sql")
 
     graph = SQG.load_from_file()
-    undo_query = generate_undo_query(graph, query_order=6) # DELETE FROM X WHERE name='Aaron';
-    print(f"{undo_query = }")
+    undo_query_set = generate_undo_query(graph, query_order=6) # DELETE FROM X WHERE name='Aaron';
+    
+    print("--UNDO QUERY SET--")
+    for undo_query in undo_query_set:
+        print(undo_query)
 
 
 if __name__ == "__main__":

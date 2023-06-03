@@ -25,7 +25,11 @@ def generate_undo_query_delete(graph: SQG, node: DeleteNode):
     update_nodes = []
     updated_columns = insert_node.get_all_updated_columns()
     for column in updated_columns:
-        last_update = graph.index.find(_from="update", _key=f"{node.target_table}-{column}")[-1]
+        last_update = graph.index.find_last_update(
+            table_name=node.target_table,
+            primary_key=node.primary_key,
+            column_name=column
+        )
         update_nodes.append(last_update)
     
     undo_query_set = [insert_node.query_string] + [update_node.query_string for update_node in update_nodes]
