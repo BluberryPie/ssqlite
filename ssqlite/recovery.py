@@ -7,7 +7,13 @@ def generate_undo_query_create(graph: SQG, node: CreateNode):
 
 
 def generate_undo_query_insert(graph: SQG, node: InsertNode):
-    pass
+    # 1. Check if flag_delete is on
+    if node.flag_delete:
+        return []
+    # 2. Otherwise, generate corresponding DELETE query
+    delete_query = f"DELETE FROM {node.target_table} WHERE rowid={node.primary_key}"
+    undo_query_set = [delete_query]
+    return undo_query_set
 
 
 def generate_undo_query_update(graph: SQG, node: UpdateNode):
