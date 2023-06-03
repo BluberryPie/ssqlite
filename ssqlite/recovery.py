@@ -24,7 +24,28 @@ def generate_undo_query_insert(node: InsertNode):
 
 
 def generate_undo_query_update(graph: SQG, node: UpdateNode):
-    pass
+    # 1. Check whether corresponding row is deleted or not
+    corr_insert_node = graph.index.find(
+        _from="insert",
+        _key=f"{node.target_table}-{node.primary_key}"
+    )
+    if corr_insert_node.flag_delete:
+        return []
+    
+    parent_node = node.get_parent()
+    # 2. Otherwise, if it's parent is an UpdateNode, just execute its query
+    if isinstance(parent_node, UpdateNode):
+        undo_query_set = [parent_node.query_string]
+    # 3. If it's parent is an InsertNode, delete the row and execute the insert statement again
+    elif isinstance(parent_node, InsertNode):
+        delete_query = f"DELETE FROM {node.target_table} WHERE rowid={node.primary_key};"
+        insert_query = corr_insert_node.query_string
+        undo_query_set = [delete_query, insert_query]
+    # 4. Exception Handler
+    else:
+        raise InvalidParent(f"UpdateNode cannot have {type(parent_node)} as its parent")
+
+    return undo_query_set
 
 
 def generate_undo_query_drop(graph: SQG, node: DropNode):
