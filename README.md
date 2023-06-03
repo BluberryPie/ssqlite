@@ -72,6 +72,29 @@ Upon running the test code, if the result is returned as `OK`, it indicates that
 
 ## Data Structure(SQG)
 
+`SSqliteQueryGraph` (SQG) is the central component of the **`SSqlite`** module which is a tree structure wherein each node represents an individual query statement. The structure of each node is implemented as the `SSqliteNode` class, located in the `ssqlite/node.py` file. The SSqliteNode class encompasses the following properties:
+
+| Property | Required | Type | Description |
+|---|---|---|---|
+| `node_id` | True | `str` | Identifier of each node |
+| `query_order` | True | `int` | Execution order of the query |
+| `query_string` | True | `str` | The verbatim query string |
+| `parent` | False | `str` | Reference to the parent node |
+| `children` | False | `list[str]` | List of references to its child nodes |
+| `primary_key` | False | `str` | The primary key (`rowid`) associated with the query |
+| `target_table` | True | `str` | The table name associated with the query |
+| `target_column` | False | `str` | The column name associated with the query |
+| `flag_drop` | False | `bool` | Indicator whether the table has been dropped |
+| `flag_delete` | False | `bool` | Indicator whether the row has been deleted |
+
+Additional properties have been incorporated into the conventional tree node structures to facilitate the functioning of the revert mechanism. An example of such a property is `query_order`, which plays a vital role in the recovery algorithm by allowing efficient retrieval of the target node with a time complexity of $O(1)$. This property serves as a key within a hash map data structure referred to as the **Index**. Furthermore, properties like `primary_key` and `target_table` are utilized in the formulation of the undo query set through specifically designed algorithms.
+
+The `Index` is an integral part of the `SSqliteQueryGraph`, serving as a hash map data structure designed to efficiently locate specific nodes using their corresponding keys. The inclusion of this additional component is crucial for optimizing the recovery algorithm's efficiency, as searching the entire tree structure would be time-consuming. By utilizing the `Index`, it becomes feasible to retrieve specific nodes based on their query order, as previously mentioned. Furthermore, it enables the search for specific nodes based on significant information such as the `primary_key` or `target_column`.
+
+The combined functionality of the Index and the tree structure can be illustrated as follows:
+
+![Overview](https://github.com/BluberryPie/ssqlite/assets/63835339/0115c204-ac09-41ae-8bb5-a2bbe60f89d4)
+
 ---
 
 ## Algorithm
