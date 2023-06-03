@@ -49,8 +49,30 @@ def generate_undo_query_update(graph: SQG, node: UpdateNode):
 
 
 def generate_undo_query_drop(graph: SQG, node: DropNode):
-    pass
-
+    # 1. Find corresponding CreateNode(=parent)
+    create_node = node.get_parent()
+    # 2. Find all following inserts which were not deleted(flag_delete=False)
+    insert_nodes = []
+    for child in create_node.children:
+        if isinstance(child, InsertNode) and not child.flag_delete:
+            insert_nodes.append(child)
+    # 3. Find all following updates(only the last ones)
+    last_update_nodes = []
+    for insert_node in insert_nodes:
+        updated_columns = insert_node.get_all_updated_columns()
+        for column in updated_columns:
+            last_update = graph.index.find_last_update(
+                table_name=insert_node.target_table,
+                primary_key=insert_node.primary_key,
+                column_name=column
+            )
+            if last_update is not None:
+                last_update_nodes.append(last_update)
+    # 4. Run'em all
+    undo_query_set  = [create_node.query_string]
+    undo_query_set += [insert_node.query_string for insert_node in insert_nodes]
+    undo_query_set += [update_node.query_string for update_node in last_update_nodes]
+    return undo_query_set
 
 def generate_undo_query_delete(graph: SQG, node: DeleteNode):
     # 1. Find corresponding InsertNode(=parent)
