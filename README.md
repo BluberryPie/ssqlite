@@ -107,7 +107,7 @@ The `Index` is another integral part of the `SSqliteQueryGraph`, serving as a ha
 
 The combined functionality of the Index and the tree structure can be illustrated as follows:
 
-![Overview](https://github.com/BluberryPie/ssqlite/assets/63835339/0115c204-ac09-41ae-8bb5-a2bbe60f89d4)
+![overview](https://github.com/BluberryPie/ssqlite/assets/63835339/91e4688e-382f-45bb-a932-21baf77acef4)
 
 ---
 
