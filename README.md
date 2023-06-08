@@ -251,4 +251,15 @@ return undo_query
 
 ---
 
-## Statistics
+## Performance(TBD)
+
+### Recovery Time for Different Query Type
+
+Average time for generating undo query sets for different query types(create, insert, update, drop, delete)
+Maybe gonna present it with a bar plot...
+
+### Recovery Time for Different Query Location
+
+Time for generating undo query sets for different query locations
+Current expectation is that older queries might require more time than relatively recent ones
+Present with histogram + kde plot
